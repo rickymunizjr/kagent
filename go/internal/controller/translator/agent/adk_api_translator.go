@@ -569,6 +569,7 @@ func (a *adkApiTranslator) translateInlineAgent(ctx context.Context, agent *v1al
 		Description: agent.Spec.Description,
 		Instruction: systemMessage,
 		Model:       model,
+		// Code execution was previously disabled pending google/adk-python#3921; it is now safe to honor the CRD flag.
 		ExecuteCode: ptr.Deref(agent.Spec.Declarative.ExecuteCodeBlocks, false),
 		Stream:      agent.Spec.Declarative.Stream,
 	}
