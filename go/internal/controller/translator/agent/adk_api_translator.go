@@ -569,7 +569,7 @@ func (a *adkApiTranslator) translateInlineAgent(ctx context.Context, agent *v1al
 		Description: agent.Spec.Description,
 		Instruction: systemMessage,
 		Model:       model,
-		ExecuteCode: false && ptr.Deref(agent.Spec.Declarative.ExecuteCodeBlocks, false), //ignored due to this issue https://github.com/google/adk-python/issues/3921.
+		ExecuteCode: ptr.Deref(agent.Spec.Declarative.ExecuteCodeBlocks, false),
 		Stream:      agent.Spec.Declarative.Stream,
 	}
 
