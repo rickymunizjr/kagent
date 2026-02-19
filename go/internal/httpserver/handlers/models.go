@@ -29,6 +29,7 @@ func (h *ModelHandler) HandleListSupportedModels(w ErrorResponseWriter, r *http.
 	supportedModels := kclient.ProviderModels{
 		v1alpha2.ModelProviderOpenAI: {
 			{Name: "gpt-5", FunctionCalling: true},
+			{Name: "gpt-5.1-codex-max", FunctionCalling: true},
 			{Name: "gpt-5-mini", FunctionCalling: true},
 			{Name: "gpt-5-nano", FunctionCalling: true},
 			{Name: "gpt-4o", FunctionCalling: true},
