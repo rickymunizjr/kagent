@@ -427,6 +427,66 @@ func Test_AdkApiTranslator_OllamaOptions(t *testing.T) {
 	assert.Equal(t, "0.7", ollamaModel.Options["temperature"])
 }
 
+func Test_AdkApiTranslator_ExecuteCodeBlocks(t *testing.T) {
+	scheme := schemev1.Scheme
+	require.NoError(t, v1alpha2.AddToScheme(scheme))
+
+	namespace := "test-ns"
+	modelName := "openai-model"
+	agentName := "code-agent"
+
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: namespace,
+		},
+	}
+
+	modelConfig := &v1alpha2.ModelConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      modelName,
+			Namespace: namespace,
+		},
+		Spec: v1alpha2.ModelConfigSpec{
+			Model:    "gpt-4",
+			Provider: v1alpha2.ModelProviderOpenAI,
+		},
+	}
+
+	agent := &v1alpha2.Agent{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      agentName,
+			Namespace: namespace,
+		},
+		Spec: v1alpha2.AgentSpec{
+			Type:        v1alpha2.AgentType_Declarative,
+			Description: "Code agent",
+			Declarative: &v1alpha2.DeclarativeAgentSpec{
+				SystemMessage:     "You can execute code",
+				ModelConfig:       modelName,
+				ExecuteCodeBlocks: ptr.To(true),
+			},
+		},
+	}
+
+	kubeClient := fake.NewClientBuilder().
+		WithScheme(scheme).
+		WithObjects(ns, modelConfig, agent).
+		Build()
+
+	defaultModel := types.NamespacedName{
+		Namespace: namespace,
+		Name:      modelName,
+	}
+
+	trans := translator.NewAdkApiTranslator(kubeClient, defaultModel, nil, "")
+
+	outputs, err := trans.TranslateAgent(context.Background(), agent)
+	require.NoError(t, err)
+	require.NotNil(t, outputs)
+	require.NotNil(t, outputs.Config)
+	assert.True(t, outputs.Config.ExecuteCode)
+}
+
 func Test_AdkApiTranslator_ServiceAccountNameOverride(t *testing.T) {
 	scheme := schemev1.Scheme
 	require.NoError(t, v1alpha2.AddToScheme(scheme))
